@@ -2,14 +2,19 @@ name: Build all projects
 
 on:
   push:
-    schedule:
-      - cron: 0 2 1 * *
+    branches:
+      - master
+  schedule:
+    - cron: 0 2 1 * *
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+    strategy:
+      matrix:
+        version: [ 5.6, 5.7, 8.0, latest ]
     steps:
       - uses: actions/checkout@v2
       - name: Login to DockerHub
@@ -18,8 +23,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push
-        run: |
-          ./docker_build.sh --version 5.6
-          ./docker_build.sh --version 5.7
-          ./docker_build.sh --version 8.0
-          ./docker_build.sh --version latest
+        run: ./docker_build.sh --version ${{ matrix.version }}
